@@ -8,9 +8,3 @@ variable "github_owner" {
   type        = string
   description = "GitHub username or organisation that will own the resources"
 }
-
-variable "repo_name" {
-  type        = string
-  description = "Name of the repository Terraform will create"
-  default     = "terraform-demo"
-}

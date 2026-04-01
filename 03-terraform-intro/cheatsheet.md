@@ -21,6 +21,29 @@ cd 03-terraform-intro
 
 ---
 
+## The Pattern
+
+```
+Write a block  -->  terraform plan  -->  terraform apply  -->  repeat
+```
+
+---
+
+## Useful Resources
+
+The GitHub Terraform provider documentation has examples and argument
+references for every resource type you'll need:
+
+| Resource | Docs |
+|----------|------|
+| Repository | [github_repository](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository) |
+| Collaborator | [github_repository_collaborator](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository_collaborator) |
+| Branch protection | [github_branch_protection](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/branch_protection) |
+
+Browse the full provider: [registry.terraform.io/providers/integrations/github](https://registry.terraform.io/providers/integrations/github/latest/docs)
+
+---
+
 ## State Inspection
 
 ```bash
@@ -28,13 +51,10 @@ cd 03-terraform-intro
 terraform state list
 
 # Show details for a specific resource
-terraform state show github_repository.demo
+terraform state show github_repository.golden_retrievers
 
 # Print all outputs
 terraform output
-
-# Machine-readable outputs (for scripts)
-terraform output -json
 ```
 
 ---
@@ -51,35 +71,15 @@ terraform apply
 
 ---
 
-## Dependency Graph
-
-```bash
-# Text output
-terraform graph
-```
-
----
-
-## Testing
-
-```bash
-# Run unit tests (mock provider, no credentials needed)
-terraform test
-```
-
----
-
 ## File Layout
 
-| File | Purpose |
-|------|---------|
-| `backend.tf` | State backend configuration |
-| `providers.tf` | GitHub provider setup |
-| `variables.tf` | Input variables |
-| `01-main.tf` | Resources: repo, branch protection, labels |
-| `02-locals.tf` | Locals: JSON parsing, derived values |
-| `outputs.tf` | Outputs: URLs, labels |
-| `repo_topics.json` | External config data |
+| File | Purpose | You edit it? |
+|------|---------|:---:|
+| `backend.tf` | State backend configuration | No |
+| `providers.tf` | GitHub provider setup | No |
+| `variables.tf` | Input variables | No |
+| `xxx.tf` | **Your resources** | **Yes** |
+| `outputs.tf` | Values printed after apply | Yes |
 
 ---
 
@@ -99,7 +99,7 @@ terraform apply
 terraform state list
 terraform output
 
-# 5. Make a change in 01-main.tf, then:
+# 5. Make a change in a file xxx.tf, then:
 terraform plan    # See the diff
 terraform apply   # Apply it
 

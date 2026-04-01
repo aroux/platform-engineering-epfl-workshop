@@ -1,7 +1,5 @@
 # Roleplay Scenarios: Why Terraform?
 
-*For the presenter: Each scenario is a story to tell. Set up the situation,
-let participants feel the pain, then show how Terraform solves it.*
 
 ---
 
