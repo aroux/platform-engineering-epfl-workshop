@@ -100,3 +100,12 @@ cd ..
 cd terraform
 terraform destroy
 ```
+
+## Expected outputs for this step
+Same outputs as step 02.
+
+Try the following values in the YAML and verify that the error message is user friendly
+* A group reference with a typo
+* A repository with invalid characters, like "my_repo_%"
+* A ruleset associated with a private repository
+* A repository with more than 60 chars

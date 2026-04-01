@@ -84,3 +84,6 @@ terraform apply   # Apply it
 # 6. Clean up
 terraform destroy
 ```
+
+## Expected outputs for this step
+Exactly same outputs as step 02.

@@ -106,3 +106,9 @@ terraform apply   # Apply it
 # 6. Clean up
 terraform destroy
 ```
+
+
+## Expected outputs for this step
+Create two repositories in your account:
+* my_account/repo-a-public
+* my_account/repo-b-public
