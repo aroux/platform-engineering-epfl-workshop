@@ -21,26 +21,26 @@ cd 03-terraform-intro
 
 ---
 
-## The Pattern
+## File Layout
 
-```
-Write a block  -->  terraform plan  -->  terraform apply  -->  repeat
-```
+| File | Purpose | You edit it? |
+|------|---------|:---:|
+| `provisioning.yaml` | Source of truth — declarative config | **Yes** |
+| `backend.tf` | State backend configuration | No |
+| `providers.tf` | GitHub provider setup | No |
+| `variables.tf` | Input variables (`github_token`, `github_owner`) | No |
+| `locals.tf` | YAML parsing and flattened lookup maps | No |
+| `main.tf` | Resources: teams, repos, permissions, rulesets | No |
+| `outputs.tf` | Values printed after apply | No |
 
 ---
 
-## Useful Resources
+## How It Works
 
-The GitHub Terraform provider documentation has examples and argument
-references for every resource type you'll need:
-
-| Resource | Docs |
-|----------|------|
-| Repository | [github_repository](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository) |
-| Collaborator | [github_repository_collaborator](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository_collaborator) |
-| Branch protection | [github_branch_protection](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/branch_protection) |
-
-Browse the full provider: [registry.terraform.io/providers/integrations/github](https://registry.terraform.io/providers/integrations/github/latest/docs)
+1. `locals.tf` reads `provisioning.yaml` via `yamldecode(file(...))`
+2. Nested `merge` / `for` loops flatten groups, repos, permissions, and rulesets into keyed maps
+3. `main.tf` uses `for_each` on those maps to provision all resources
+4. `outputs.tf` exposes the created resource attributes
 
 ---
 
@@ -51,10 +51,13 @@ Browse the full provider: [registry.terraform.io/providers/integrations/github](
 terraform state list
 
 # Show details for a specific resource
-terraform state show github_repository.golden_retrievers
+terraform state show 'github_repository.this["epfl-ws-order-management/api"]'
 
 # Print all outputs
 terraform output
+
+# Machine-readable outputs (for scripts)
+terraform output -json
 ```
 
 ---
@@ -71,15 +74,18 @@ terraform apply
 
 ---
 
-## File Layout
+## Useful Resources
 
-| File | Purpose | You edit it? |
-|------|---------|:---:|
-| `backend.tf` | State backend configuration | No |
-| `providers.tf` | GitHub provider setup | No |
-| `variables.tf` | Input variables | No |
-| `xxx.tf` | **Your resources** | **Yes** |
-| `outputs.tf` | Values printed after apply | Yes |
+| Resource | Docs |
+|----------|------|
+| Repository | [github_repository](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository) |
+| Collaborator | [github_repository_collaborator](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository_collaborator) |
+| Team | [github_team](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/team) |
+| Team membership | [github_team_membership](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/team_membership) |
+| Team repository | [github_team_repository](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/team_repository) |
+| Repository ruleset | [github_repository_ruleset](https://registry.terraform.io/providers/integrations/github/latest/docs/resources/repository_ruleset) |
+
+Browse the full provider: [registry.terraform.io/providers/integrations/github](https://registry.terraform.io/providers/integrations/github/latest/docs)
 
 ---
 
@@ -99,7 +105,7 @@ terraform apply
 terraform state list
 terraform output
 
-# 5. Make a change in a file xxx.tf, then:
+# 5. Edit provisioning.yaml (e.g. add a new repository), then:
 terraform plan    # See the diff
 terraform apply   # Apply it
 
@@ -107,8 +113,44 @@ terraform apply   # Apply it
 terraform destroy
 ```
 
+## HCL Logic
 
-## Expected outputs for this step
-Create two repositories in your account:
-* my_account/repo-a-public
-* my_account/repo-b-public
+A single hardcoded resource to get you started:
+
+```hcl
+resource "github_repository" "example" {
+  name        = "my-repo"
+  description = "A single hardcoded repository"
+  visibility  = "private"
+  auto_init   = true
+}
+```
+
+To go from hardcoded blocks to loops over `local.config`, you'll need these HCL concepts:
+
+| Pattern | What it does | Docs |
+|---------|-------------|------|
+| `for_each` | Create multiple resources from a map | [for_each](https://developer.hashicorp.com/terraform/language/meta-arguments/for_each) |
+| `for` expressions | Transform lists/maps into new structures | [for expressions](https://developer.hashicorp.com/terraform/language/expressions/for) |
+| `merge()` / `flatten()` | Combine nested maps/lists into flat structures | [merge](https://developer.hashicorp.com/terraform/language/functions/merge), [flatten](https://developer.hashicorp.com/terraform/language/functions/flatten) |
+| `try()` | Provide defaults for optional YAML fields | [try](https://developer.hashicorp.com/terraform/language/functions/try) |
+| `dynamic` blocks | Conditionally include nested blocks | [dynamic blocks](https://developer.hashicorp.com/terraform/language/expressions/dynamic-blocks) |
+
+---
+
+## Expected Outputs
+
+From the example `provisioning.yaml`, Terraform will create:
+
+| Resource | Key |
+|----------|-----|
+| Team | `epfl-ws-global-admins` |
+| Team membership | `epfl-ws-global-admins/aroux` |
+| Repository | `epfl-ws-order-management-api` (private) |
+| Repository | `epfl-ws-order-management-frontend` (public) |
+| Collaborator | `lanzrein` with `write` on both repos |
+| Team permission | `epfl-ws-global-admins` with `admin` on both repos |
+| Ruleset | `main` on `epfl-ws-order-management-frontend` |
+
+
+

@@ -1,7 +1,5 @@
 # Roleplay Scenarios: Why Terraform?
 
----
-
 ## Scenario 1: The Careful Changer
 
 **Setup the scene:**
@@ -154,4 +152,44 @@
 > all of them. This is going to take a while."
 >
 > "I want to inspect what Terraform knows about my infrastructure."
+
+
+---
+
+## Scenario 7: The Copy-Paste Engineer
+
+**Setup the scene:**
+
+> You've solved the problems above. You have Terraform, you have `plan` and
+> `apply`, life is good. You write your first `github_repository` block. It
+> works. You write a second one. Copy-paste, change the name. A third. A
+> fourth. By the tenth repository you have 200 lines of nearly identical
+> blocks.
+>
+> Then your manager says: *"All repos need to have `auto_init = true` now."*
+> You open your file and start editing. Ten blocks. You miss one. The plan
+> shows 9 changes. You go back, find the one you missed, fix it. This is
+> starting to feel familiar...
+
+**The pain:**
+
+> "I replaced clicking in the UI with copying blocks in a text file. It's
+> better, but I'm still doing the same thing over and over."
+>
+> "When I need to change a setting across all repos, I have to touch every
+> single block. That's exactly the scaling problem I was trying to solve."
+
+**The turning point:**
+
+> You remember that `provisioning.yaml` from step 02 -- the file that
+> describes all your groups, repositories, and permissions in one place.
+> It's already loaded into `local.config` in `locals.tf`.
+>
+> What if, instead of writing one block per repo, you wrote a single block
+> that loops over the config? One resource block, all your repos. Change
+> `auto_init`? One line, every repo updated.
+>
+> Start by deleting your hardcoded blocks. Build flat maps from
+> `local.config` using `for` and `merge`. Then use `for_each` to create
+> all your resources from those maps.
 
