@@ -35,13 +35,6 @@ cd 03-terraform-intro
 
 ---
 
-## How It Works
-
-1. `locals.tf` reads `provisioning.yaml` via `yamldecode(file(...))`
-2. Nested `merge` / `for` loops flatten groups, repos, permissions, and rulesets into keyed maps
-3. `main.tf` uses `for_each` on those maps to provision all resources
-4. `outputs.tf` exposes the created resource attributes
-
 ---
 
 ## State Inspection
@@ -51,7 +44,7 @@ cd 03-terraform-intro
 terraform state list
 
 # Show details for a specific resource
-terraform state show 'github_repository.this["epfl-ws-order-management/api"]'
+terraform state show 'github_repository.my_repo' 
 
 # Print all outputs
 terraform output
