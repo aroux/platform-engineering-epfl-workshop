@@ -11,7 +11,27 @@
 > dozens of applications, hundreds of repos.
 >
 > A colleague asks you to add a new validation rule: repository names must not
-> exceed 60 characters when prefixed with the application name. You open
+> exceed 60 characters when prefixed with the application name. You have seen that it's
+> possible to add validations in Terraform, even if it seems a bit complicated:
+```
+ locals {
+  config = yamldecode(file("config.yaml"))
+
+  _validate_name = (
+    can(local.config.name) 
+    ? (length(local.config.name) <= 60 
+        ? true 
+        : tobool("ERROR: 'name' exceeds 60 characters (got ${length(local.config.name)})."))
+    : tobool("ERROR: 'name' field is required in YAML.")
+  )
+
+  # Safe to use after validation passes
+  app_name = local._validate_name ? local.config.name : null
+}
+ ```
+> But why not, let's try it.
+>
+> You open
 > `locals.tf` and stare at the HCL. You need to parse YAML inside Terraform
 > using `yamldecode()`, then loop through nested structures with `flatten()`,
 > build maps with `for` expressions, and somehow produce a meaningful error
@@ -25,6 +45,8 @@
 > You add comments. Now the file is 200 lines long and the comments are longer
 > than the logic. A week later, a new edge case breaks it. You're back in
 > `locals.tf`, trying to debug a `flatten()` inside a `merge()` inside a `for`.
+
+
 
 **The pain:**
 
